@@ -6,7 +6,7 @@ Projeto Integrador: sistema de console em C para organizar um campeonato de e-Sp
 
 | Nome | RA | Responsabilidade |
 | --- | --- | --- |
-| Gabriel Gurian | | Núcleo do campeonato: regras, pareamentos, ranking, matriz, ordenação, leitura de entrada |
+| Gabriel Gurian | 10769963 | Núcleo do campeonato: regras, pareamentos, ranking, matriz, ordenação, leitura de entrada |
 | Pedro Vidigal | 10436802 | Cadastros (equipes e jogadores), buscas, persistência SQLite, Makefile |
 
 ## 2. Problema e funcionalidades
@@ -129,6 +129,34 @@ esports
 - O `chcp 65001` faz o console do Windows mostrar os acentos corretamente.
 - O programa usa o `esports.db` da pasta atual. O entregue já tem **8 equipes e 27 jogadores** cadastrados para a demonstração. Para começar do zero, apague o `esports.db`.
 
+### Frontend (navegador)
+
+Além do console, o projeto tem uma interface web. O `mingw32-make` gera os dois programas: `esports` e `esports_web`.
+
+```
+esports_web
+```
+
+Depois é só abrir **http://localhost:8080** no navegador. Para usar outra porta ou outro banco: `esports_web 8081 outro.db`. Para parar, use Ctrl+C.
+
+Sem make:
+
+```
+gcc -Wall -Wextra -std=c99 -o esports_web web/servidor.c models/campeonato.c models/equipe.c models/jogador.c models/partida.c algoritmos/busca.c algoritmos/ordenacao.c persistencia/banco.c persistencia/sqlite3.o -lws2_32
+```
+
+(no Linux, sem o `-lws2_32`)
+
+**Como funciona:**
+- `web/servidor.c` é um servidor HTTP pequeno escrito em C, com sockets (Winsock no Windows). Ele reaproveita **os mesmos** models, algoritmos e banco do console. Só o `main.c` fica de fora, porque o servidor tem o próprio `main`.
+- O navegador não tem regra nenhuma. Ele pede `GET /api/estado` (um JSON com equipes, ranking, jogadores, partidas, matriz e campeão), desenha a tela e envia os comandos por `POST /api/...`.
+- Cada comando segue o mesmo padrão do `main.c`: lê e valida os campos (como `ler_int`/`ler_texto`), chama o model e, se deu OK, grava no banco.
+- O ranking e a lista por nick já chegam ordenados pelo insertion sort do C. A busca de equipe usa a busca binária, e a de jogador usa a busca linear.
+- O servidor só aceita conexões do próprio computador (127.0.0.1). Os comandos exigem o cabeçalho `X-Esports`, então outro site aberto no navegador não consegue alterar o campeonato.
+- `web/index.html`, `web/style.css` e `web/app.js` são lidos do disco a cada pedido. Por isso o servidor precisa ser executado na pasta do projeto.
+
+**Atenção:** não use o console e o servidor ao mesmo tempo no mesmo banco. Cada programa carrega os dados na memória ao abrir e não vê o que o outro gravou depois disso.
+
 **Estrutura:**
 
 ```
@@ -136,6 +164,7 @@ main.c            menus e leitura validada (ler_int, ler_texto)
 models/           campeonato (structs, fase), equipe, jogador, partida  (sem SQLite)
 algoritmos/       busca (binária e lineares), ordenacao (insertion sort) (sem printf)
 persistencia/     banco.c/.h (SQLite), schema.sql, sqlite3.c/.h
+web/              servidor.c (HTTP + JSON em C), index.html, style.css, app.js
 Makefile
 ```
 

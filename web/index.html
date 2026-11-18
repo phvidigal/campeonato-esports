@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Campeonato de e-Sports</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topo">
+  <div class="marca">
+    <span class="logo" aria-hidden="true"></span>
+    <div>
+      <h1>Campeonato de e-Sports</h1>
+      <p id="fase-texto" class="fase-texto">Carregando…</p>
+    </div>
+  </div>
+  <ol id="etapas" class="etapas" aria-label="Fases do campeonato"></ol>
+</header>
+
+<nav class="abas" role="tablist">
+  <button data-aba="partidas" role="tab">Partidas</button>
+  <button data-aba="classificacao" role="tab">Classificação</button>
+  <button data-aba="equipes" role="tab">Equipes</button>
+  <button data-aba="jogadores" role="tab">Jogadores</button>
+</nav>
+
+<main>
+  <!-- ================= PARTIDAS ================= -->
+  <section id="aba-partidas" class="aba">
+    <div id="campeao"></div>
+
+    <div class="card">
+      <div class="card-topo">
+        <h2 id="rodada-titulo">Rodada atual</h2>
+        <div class="acoes">
+          <span id="rodada-dica" class="dica"></span>
+          <button id="btn-gerar" class="btn primario" type="button">Gerar rodada</button>
+        </div>
+      </div>
+      <div id="rodada-lista"></div>
+    </div>
+
+    <div id="chave-card" class="card" hidden>
+      <h2>Mata-mata</h2>
+      <div id="chave" class="chave"></div>
+    </div>
+
+    <div id="historico-card" class="card" hidden>
+      <h2>Rodadas anteriores</h2>
+      <div id="historico"></div>
+    </div>
+  </section>
+
+  <!-- ================= CLASSIFICAÇÃO ================= -->
+  <section id="aba-classificacao" class="aba" hidden>
+    <div class="card">
+      <h2>Ranking</h2>
+      <p class="nota">Vitória vale 3 pontos, derrota 0. Só o suíço soma pontos. Desempate: pontos, saldo de rounds e menor código.</p>
+      <div class="tabela-wrap"><table id="ranking" class="tabela"></table></div>
+    </div>
+    <div class="card">
+      <h2>Matriz de confrontos</h2>
+      <p class="nota">Leia a linha contra a coluna: <b class="v">V</b> = venceu, <b class="d">D</b> = perdeu.</p>
+      <div class="tabela-wrap"><table id="matriz" class="tabela matriz"></table></div>
+    </div>
+  </section>
+
+  <!-- ================= EQUIPES ================= -->
+  <section id="aba-equipes" class="aba" hidden>
+    <div class="grade-2">
+      <form class="card form" data-acao="cadastrar-equipe">
+        <h2>Nova equipe</h2>
+        <p id="equipe-bloqueio" class="nota alerta" hidden>O campeonato já começou: não dá mais para cadastrar ou excluir equipes.</p>
+        <div class="campos">
+          <label>Código <input name="id" type="number" min="1" max="9999" required></label>
+          <label class="cresce">Nome <input name="nome" maxlength="49" required autocomplete="off"></label>
+        </div>
+        <button class="btn primario">Cadastrar equipe</button>
+      </form>
+
+      <form class="card form" data-acao="buscar-equipe">
+        <h2>Buscar equipe</h2>
+        <p class="nota">Busca binária pelo código.</p>
+        <div class="campos">
+          <label class="cresce">Código <input name="id" type="number" min="1" max="9999" required></label>
+        </div>
+        <button class="btn">Buscar</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <div class="card-topo">
+        <h2>Equipes</h2>
+        <span id="equipes-contagem" class="chip"></span>
+      </div>
+      <div id="equipes-grade" class="grade-equipes"></div>
+    </div>
+  </section>
+
+  <!-- ================= JOGADORES ================= -->
+  <section id="aba-jogadores" class="aba" hidden>
+    <div class="grade-2">
+      <form class="card form" data-acao="cadastrar-jogador">
+        <h2>Novo jogador</h2>
+        <div class="campos">
+          <label>Nick <input name="nick" maxlength="29" required autocomplete="off"></label>
+          <label class="cresce">Nome <input name="nome" maxlength="49" required autocomplete="off"></label>
+        </div>
+        <div class="campos">
+          <label class="cresce">Equipe <select name="equipe" class="sel-equipes" required></select></label>
+        </div>
+        <button class="btn primario">Cadastrar jogador</button>
+      </form>
+
+      <form class="card form" data-acao="buscar-jogador">
+        <h2>Buscar jogador</h2>
+        <p class="nota">Pelo nick, sem diferenciar maiúsculas.</p>
+        <div class="campos">
+          <label class="cresce">Nick <input name="nick" maxlength="29" required autocomplete="off"></label>
+        </div>
+        <button class="btn">Buscar</button>
+        <div id="busca-jogador" class="resultado-busca" hidden></div>
+      </form>
+    </div>
+
+    <div class="card">
+      <div class="card-topo">
+        <h2>Jogadores</h2>
+        <label class="filtro">Mostrar
+          <select id="filtro-equipe"></select>
+        </label>
+      </div>
+      <div class="tabela-wrap"><table id="jogadores" class="tabela"></table></div>
+    </div>
+  </section>
+</main>
+
+<!-- ================= JANELAS ================= -->
+<dialog id="dlg-equipe">
+  <div class="dlg-topo">
+    <h2 id="dlg-equipe-titulo">Equipe</h2>
+    <button class="fechar" type="button" data-fechar aria-label="Fechar">×</button>
+  </div>
+  <div id="dlg-equipe-stats" class="stats"></div>
+  <h3>Jogadores</h3>
+  <ul id="dlg-equipe-jogadores" class="lista"></ul>
+  <form class="form" data-acao="alterar-equipe">
+    <input type="hidden" name="id">
+    <div class="campos">
+      <label class="cresce">Novo nome <input name="nome" maxlength="49" required autocomplete="off"></label>
+    </div>
+    <div class="linha-botoes">
+      <button class="btn">Renomear</button>
+      <button id="btn-excluir-equipe" class="btn perigo" type="button">Excluir equipe</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dlg-jogador">
+  <form class="form" data-acao="alterar-jogador">
+    <div class="dlg-topo">
+      <h2>Editar jogador</h2>
+      <button class="fechar" type="button" data-fechar aria-label="Fechar">×</button>
+    </div>
+    <label>Nick <input name="nick" readonly></label>
+    <label>Nome <input name="nome" maxlength="49" required autocomplete="off"></label>
+    <label>Equipe <select name="equipe" class="sel-equipes" required></select></label>
+    <div class="linha-botoes">
+      <button class="btn primario">Salvar</button>
+    </div>
+  </form>
+</dialog>
+
+<div id="aviso" class="aviso" role="status" aria-live="polite"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
